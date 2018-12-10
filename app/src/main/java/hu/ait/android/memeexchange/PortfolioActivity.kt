@@ -24,8 +24,8 @@ class PortfolioActivity : AppCompatActivity() {
                             postRef.get()
                                     .addOnSuccessListener { postDocument ->
 //                                        postScore += document.get("score").toString().toDouble()
-                                        val score = postDocument.get("score").toString()
-                                        tvEquity.text = (tvEquity.text.toString().toDouble() + score.toDouble()).toString()
+                                        val shareEquity = postDocument.get("score").toString().toDouble() * postDocument.get("quantity").toString().toInt()
+                                        tvEquity.text = (tvEquity.text.toString().toDouble() + shareEquity).toString()
                                     }
                         }
 

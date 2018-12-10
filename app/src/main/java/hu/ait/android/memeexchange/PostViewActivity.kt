@@ -44,41 +44,26 @@ class PostViewActivity : AppCompatActivity() {
                         }
 
                         btnDown.setOnClickListener {
+
                         }
 
-                        btnBuy.setOnClickListener { it ->
+                        btnBuy.setOnClickListener {
+                            val buyDialog = TransactionDialog()
 
-                            val portfolioCollections = FirebaseFirestore.getInstance().collection("users")
+                            val bundle = Bundle()
+                            bundle.putSerializable(KEY_POST_ID, postID)
+                            bundle.putSerializable("KEY_ITEM_TO_BUY", 0)
+                            buyDialog.arguments = bundle
+                            buyDialog.show(supportFragmentManager, "BUYDIALOG")
+                        }
 
-                            val portfolioSubCollection = portfolioCollections.document(userID).collection("owned_posts")
+                        btnSell.setOnClickListener{
+                            val sellDialog = TransactionDialog()
 
-                            var shareDocument = portfolioSubCollection.document(postID)
-
-                            shareDocument.get()
-                                .addOnCompleteListener {
-                                    if (documentSnapshot.exists()) {
-                                        Log.d("CHECK", "Already bought")
-                                    } else {
-                                        Log.d("CHECK", "Bought")
-                                    }
-                            }
-
-                            val boughtShare = Share(
-                                    postID,
-                                    post!!.score.toDouble(),
-                                    1
-                            )
-
-                            portfolioSubCollection.document(postID).set(boughtShare
-                                )
-                                    .addOnSuccessListener {
-                                        Toast.makeText(this@PostViewActivity, "Post bought",
-                                                Toast.LENGTH_LONG).show()
-                                    }.addOnFailureListener {
-                                        Toast.makeText(this@PostViewActivity, "Error ${it.message}",
-                                                Toast.LENGTH_LONG).show()
-                                    }
-
+                            val bundle = Bundle()
+                            bundle.putSerializable(KEY_POST_ID, postID)
+                            sellDialog.arguments = bundle
+                            sellDialog.show(supportFragmentManager, "SELLDIALOG")
                         }
                     }
 
@@ -95,4 +80,6 @@ class PostViewActivity : AppCompatActivity() {
 
 
     }
+
+
 }
