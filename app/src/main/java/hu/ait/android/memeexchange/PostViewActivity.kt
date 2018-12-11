@@ -6,6 +6,7 @@ import android.util.Log
 import android.widget.Toast
 import com.bumptech.glide.Glide
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import hu.ait.android.memeexchange.MainActivity.Companion.KEY_POST_ID
 import hu.ait.android.memeexchange.MainActivity.Companion.KEY_USER_ID
@@ -35,11 +36,11 @@ class PostViewActivity : AppCompatActivity() {
         var ownedPost : Share?
 
 
+
         if (postID != "") {
             val postRef= FirebaseFirestore.getInstance().collection("posts").
                     document(postID)
-            val userRef = FirebaseFirestore.getInstance().collection("users")
-                    .document(userID)
+
             val ownedPostRef = FirebaseFirestore.getInstance().collection("users")
                     .document(userID)
                     .collection("owned_posts")
@@ -54,16 +55,19 @@ class PostViewActivity : AppCompatActivity() {
                         Glide.with(this@PostViewActivity).load(post?.imgUrl).into(ivPhoto)
                         tvScore.text = post?.score.toString()
 
-                        ownedPostRef.get().addOnSuccessListener {
+                        ownedPostRef.get().addOnSuccessListener {documentSnapshot ->
                             ownedPost = documentSnapshot.toObject(Share::class.java)
-                            tvStocks.text = "Shares Owned: " + ownedPost?.quantity.toString()
-                            tvAvgCost.text = "Average Cost: " + ownedPost?.avgCost.toString()
+                            var tvStockBuffer = ownedPost?.quantity?: 0.0
+                            tvStocks.text = tvStockBuffer.toString()
+                            var avgCostBuffer = ownedPost?.avgCost?: 0.0
+                            tvAvgCost.text = "Average Cost: " + avgCostBuffer.toString()
+                            tvEquity.text = "Equity: " + (Math.abs(tvStocks.text.toString()
+                                    .toDouble().times(tvScore.text.toString().toDouble())))
+                                    .toString()
+                            tvStocks.text = "Shares Owned: " + tvStocks.text
+
                         }
 
-                        userRef.get().addOnSuccessListener {
-                            user = documentSnapshot.toObject(User::class.java)
-                            tvEquity.text = "Current Buying Power: " + user?.buyingPower.toString()
-                        }
 
                         btnUp.setOnClickListener {
 
