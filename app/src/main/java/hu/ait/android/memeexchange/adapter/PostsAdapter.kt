@@ -5,6 +5,7 @@ import android.content.Intent
 import android.support.v4.app.ActivityCompat.startActivityForResult
 import android.support.v7.widget.RecyclerView
 import android.text.TextUtils
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -18,6 +19,7 @@ import hu.ait.android.memeexchange.MainActivity
 import hu.ait.android.memeexchange.MainActivity.Companion.KEY_POST_ID
 import hu.ait.android.memeexchange.MainActivity.Companion.KEY_USER_ID
 import hu.ait.android.memeexchange.MainActivity.Companion.REQUEST_DETAILS
+import hu.ait.android.memeexchange.PortfolioActivity
 import hu.ait.android.memeexchange.PostViewActivity
 import hu.ait.android.memeexchange.R
 import hu.ait.android.memeexchange.data.Post
@@ -72,8 +74,15 @@ class PostsAdapter(var context: Context, var uid:String) : RecyclerView.Adapter<
             downVotePost(holder.adapterPosition)
         }
 
+        Log.d("test", context.toString())
         holder.itemView.setOnClickListener {
-            (context as MainActivity).openPost(postKeys[holder.adapterPosition])
+            if (context is MainActivity) {
+                (context as MainActivity).openPost(postKeys[holder.adapterPosition])
+            } else {
+                (context as PortfolioActivity).openPost(postKeys[holder.adapterPosition])
+
+            }
+
         }
 
         setAnimation(holder.itemView, position)
@@ -82,6 +91,12 @@ class PostsAdapter(var context: Context, var uid:String) : RecyclerView.Adapter<
     fun addPost(post: Post, key: String) {
         postsList.add(post)
         postKeys.add(key)
+        notifyDataSetChanged()
+    }
+
+    fun updatePost(post: Post, key: String) {
+        var index = postKeys.indexOf(key)
+        postsList[index] = post
         notifyDataSetChanged()
     }
 

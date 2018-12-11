@@ -97,7 +97,7 @@ class CreatePostActivity : AppCompatActivity() {
             FirebaseAuth.getInstance().currentUser!!.displayName!!,
             etTitle.text.toString(),
             0,
-            imgUrl
+            imgUrl, ArrayList()
         )
 
         val postsCollections = FirebaseFirestore.getInstance().collection("posts")

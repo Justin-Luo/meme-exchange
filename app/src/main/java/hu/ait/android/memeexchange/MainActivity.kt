@@ -78,7 +78,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                             postsAdapter.addPost(post, docChange.document.id)
                         }
                         DocumentChange.Type.MODIFIED -> {
-
+                            val post = docChange.document.toObject(Post::class.java)
+                            postsAdapter.updatePost(post, docChange.document.id)
                         }
                         DocumentChange.Type.REMOVED -> {
                             postsAdapter.removePostByKey(docChange.document.id)

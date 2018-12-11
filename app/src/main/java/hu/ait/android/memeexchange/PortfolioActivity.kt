@@ -1,5 +1,6 @@
 package hu.ait.android.memeexchange
 
+import android.content.Intent
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.support.v7.widget.LinearLayoutManager
@@ -48,23 +49,22 @@ class PortfolioActivity : AppCompatActivity() {
         }.start()
 
         setContentView(R.layout.activity_portfolio)
-//        portfolioPostsAdapter = PostsAdapter(this,
-//                FirebaseAuth.getInstance().currentUser!!.uid)
-//        val layoutManager = LinearLayoutManager(this@PortfolioActivity)
-//        layoutManager.reverseLayout = true
-//        layoutManager.stackFromEnd = true
-//        recyclerPortfolioPosts.adapter = portfolioPostsAdapter
-//        recyclerPortfolioPosts.layoutManager = layoutManager
-//
-//
-//        initPortfolioPosts()
+        portfolioPostsAdapter = PostsAdapter(this,
+                FirebaseAuth.getInstance().currentUser!!.uid)
+        val layoutManager = LinearLayoutManager(this@PortfolioActivity)
+        layoutManager.reverseLayout = true
+        layoutManager.stackFromEnd = true
+        recyclerPortfolioPosts.adapter = portfolioPostsAdapter
+        recyclerPortfolioPosts.layoutManager = layoutManager
+
+
+        initPortfolioPosts()
     }
 
     fun initPortfolioPosts() {
 
         val db = FirebaseFirestore.getInstance()
-        val portfolioCollection = db.collection("users")
-                .document(userID).collection("owned_posts")
+        val portfolioCollection = db.collection("posts").whereArrayContains("owners", userID)
 
         portfolioPostsListener = portfolioCollection.addSnapshotListener(object : EventListener<QuerySnapshot> {
             override fun onEvent(querySnapshot: QuerySnapshot?, p1: FirebaseFirestoreException?) {
@@ -93,7 +93,14 @@ class PortfolioActivity : AppCompatActivity() {
     }
 
     override fun onDestroy() {
-//        portfolioPostsListener.remove()
+        portfolioPostsListener.remove()
         super.onDestroy()
+    }
+
+    fun openPost(postID : String) {
+        val intentPostView = Intent()
+        intentPostView.setClass(this@PortfolioActivity, PostViewActivity::class.java)
+        intentPostView.putExtra(MainActivity.KEY_POST_ID, postID)
+        startActivityForResult(intentPostView, MainActivity.REQUEST_DETAILS)
     }
 }

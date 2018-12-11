@@ -12,11 +12,13 @@ import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
 import com.google.firebase.firestore.DocumentReference
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import hu.ait.android.memeexchange.MainActivity.Companion.KEY_POST_ID
 import hu.ait.android.memeexchange.MainActivity.Companion.userID
 
 import hu.ait.android.memeexchange.data.Share
+import hu.ait.android.memeexchange.data.User
 import kotlinx.android.synthetic.main.buy_dialog.*
 import kotlinx.android.synthetic.main.buy_dialog.view.*
 import java.text.DecimalFormat
@@ -139,6 +141,7 @@ class TransactionDialog : DialogFragment(), AdapterView.OnItemSelectedListener {
 
             if (quantity == currQuantity) {
                 ownedPostRef.delete()
+                postRef.collection("owners").document(userID).delete()
             } else {
                 ownedPostRef.update("quantity", currQuantity - quantity)
             }
@@ -163,14 +166,13 @@ class TransactionDialog : DialogFragment(), AdapterView.OnItemSelectedListener {
                         .addOnSuccessListener { documentSnapshot ->
                             if (!documentSnapshot.exists()) {
                                 handleNewShare(marketPrice, quantity, userRef)
-
                             } else {
                                 handleAlreadyBoughtShare(ownedPostRef, quantity, marketPrice)
                             }
                             buyingPower -= marketPrice * quantity
                             userRef.update("buyingPower", buyingPower)
+                            postRef.update("owners", FieldValue.arrayUnion(userID))
                         }
-
                 dialog.dismiss()
             }
         }
