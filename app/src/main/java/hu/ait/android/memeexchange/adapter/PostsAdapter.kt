@@ -130,8 +130,6 @@ class PostsAdapter(var context: Context, var uid:String) : RecyclerView.Adapter<
         }
     }
 
-
-
     class ViewHolder(itemView: View) :
         RecyclerView.ViewHolder(itemView) {
 

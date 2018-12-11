@@ -70,16 +70,6 @@ class PostViewActivity : AppCompatActivity() {
                     .addOnFailureListener { exception ->
                         Log.d("Error","Get failed with ", exception)
                     }
-
-
         }
-
-
-
-
-
-
     }
-
-
 }

@@ -199,9 +199,6 @@ class TransactionDialog : DialogFragment(), AdapterView.OnItemSelectedListener {
         )
 
         userRef.collection("owned_posts").document(postID).set(boughtShare)
-                .addOnSuccessListener {
-                    Log.d("test", "Bought new share!")
-                }
     }
 
     override fun onNothingSelected(parent: AdapterView<*>?) {

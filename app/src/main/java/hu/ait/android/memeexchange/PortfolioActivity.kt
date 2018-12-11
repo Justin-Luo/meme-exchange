@@ -2,13 +2,22 @@ package hu.ait.android.memeexchange
 
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
+import android.support.v7.widget.LinearLayoutManager
 import android.util.Log
-import com.google.firebase.firestore.FirebaseFirestore
+import android.widget.Toast
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.*
 import hu.ait.android.memeexchange.MainActivity.Companion.userID
+import hu.ait.android.memeexchange.adapter.PostsAdapter
+import hu.ait.android.memeexchange.data.Post
 import hu.ait.android.memeexchange.data.User
 import kotlinx.android.synthetic.main.activity_portfolio.*
+import kotlinx.android.synthetic.main.app_bar_main.*
 
 class PortfolioActivity : AppCompatActivity() {
+
+    private lateinit var portfolioPostsAdapter: PostsAdapter
+    private lateinit var portfolioPostsListener: ListenerRegistration
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -20,11 +29,11 @@ class PortfolioActivity : AppCompatActivity() {
                     .get()
                     .addOnSuccessListener { result->
                         for (document in result) {
+                            val shareQuantity = document.get("quantity").toString().toDouble()
                             var postRef = FirebaseFirestore.getInstance().collection("posts").document(document.id)
                             postRef.get()
                                     .addOnSuccessListener { postDocument ->
-//                                        postScore += document.get("score").toString().toDouble()
-                                        val shareEquity = postDocument.get("score").toString().toDouble() * postDocument.get("quantity").toString().toInt()
+                                        val shareEquity = postDocument.get("score").toString().toDouble() * shareQuantity
                                         tvEquity.text = (tvEquity.text.toString().toDouble() + shareEquity).toString()
                                     }
                         }
@@ -38,5 +47,53 @@ class PortfolioActivity : AppCompatActivity() {
                     }
         }.start()
 
+        setContentView(R.layout.activity_portfolio)
+//        portfolioPostsAdapter = PostsAdapter(this,
+//                FirebaseAuth.getInstance().currentUser!!.uid)
+//        val layoutManager = LinearLayoutManager(this@PortfolioActivity)
+//        layoutManager.reverseLayout = true
+//        layoutManager.stackFromEnd = true
+//        recyclerPortfolioPosts.adapter = portfolioPostsAdapter
+//        recyclerPortfolioPosts.layoutManager = layoutManager
+//
+//
+//        initPortfolioPosts()
+    }
+
+    fun initPortfolioPosts() {
+
+        val db = FirebaseFirestore.getInstance()
+        val portfolioCollection = db.collection("users")
+                .document(userID).collection("owned_posts")
+
+        portfolioPostsListener = portfolioCollection.addSnapshotListener(object : EventListener<QuerySnapshot> {
+            override fun onEvent(querySnapshot: QuerySnapshot?, p1: FirebaseFirestoreException?) {
+                if (p1 != null) {
+                    Toast.makeText(this@PortfolioActivity, "Error: ${p1.message}",
+                            Toast.LENGTH_LONG).show()
+                    return
+                }
+
+                for (docChange in querySnapshot!!.getDocumentChanges()) {
+                    when (docChange.type) {
+                        DocumentChange.Type.ADDED -> {
+                            val post = docChange.document.toObject(Post::class.java)
+                            portfolioPostsAdapter.addPost(post, docChange.document.id)
+                        }
+                        DocumentChange.Type.MODIFIED -> {
+
+                        }
+                        DocumentChange.Type.REMOVED -> {
+                            portfolioPostsAdapter.removePostByKey(docChange.document.id)
+                        }
+                    }
+                }
+            }
+        })
+    }
+
+    override fun onDestroy() {
+//        portfolioPostsListener.remove()
+        super.onDestroy()
     }
 }
