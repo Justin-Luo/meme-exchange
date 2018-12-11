@@ -27,6 +27,7 @@ class CreatePostActivity : AppCompatActivity() {
     companion object {
         private val PERMISSION_REQUEST_CODE = 101
         private const val CAMERA_REQUEST_CODE = 102
+        private const val GET_FROM_GALLERY = 27
 
     }
 
@@ -40,13 +41,18 @@ class CreatePostActivity : AppCompatActivity() {
             if (uploadBitmap != null) {
                 uploadPostWithImage()
             } else {
-                uploadPost()
+                //uploadPost()
+
+                Toast.makeText(this,
+                        "Please attach image to post", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
             }
             finish()
         }
-
         btnAttach.setOnClickListener {
-            startActivityForResult(Intent(MediaStore.ACTION_IMAGE_CAPTURE), CAMERA_REQUEST_CODE)
+            //startActivityForResult(Intent(MediaStore.ACTION_IMAGE_CAPTURE), CAMERA_REQUEST_CODE)
+            startActivityForResult(Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI), GET_FROM_GALLERY)
+
         }
 
         btnAttach.isEnabled = false
@@ -55,15 +61,15 @@ class CreatePostActivity : AppCompatActivity() {
 
     private fun requestNeededPermission() {
         if (ContextCompat.checkSelfPermission(this,
-                android.Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+                android.Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
             if (ActivityCompat.shouldShowRequestPermissionRationale(this,
-                    android.Manifest.permission.CAMERA)) {
+                    android.Manifest.permission.READ_EXTERNAL_STORAGE)) {
                 Toast.makeText(this,
-                    "I need it for camera", Toast.LENGTH_SHORT).show()
+                    "I need it for gallery", Toast.LENGTH_SHORT).show()
             }
 
             ActivityCompat.requestPermissions(this,
-                arrayOf(android.Manifest.permission.CAMERA),
+                arrayOf(android.Manifest.permission.READ_EXTERNAL_STORAGE),
                 PERMISSION_REQUEST_CODE)
         } else {
             // már van engedély
@@ -75,10 +81,10 @@ class CreatePostActivity : AppCompatActivity() {
         when (requestCode) {
             PERMISSION_REQUEST_CODE -> {
                 if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    Toast.makeText(this, "CAMERA perm granted", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, "Gallery perm granted", Toast.LENGTH_SHORT).show()
                     btnAttach.isEnabled = true
                 } else {
-                    Toast.makeText(this, "CAMERA perm NOT granted", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, "Gallery perm NOT granted", Toast.LENGTH_SHORT).show()
                     btnAttach.isEnabled = false
                 }
             }
@@ -109,9 +115,10 @@ class CreatePostActivity : AppCompatActivity() {
 
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        if (requestCode == CAMERA_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
+        if (requestCode == GET_FROM_GALLERY && resultCode == Activity.RESULT_OK) {
+            val selectedImage = data!!.getData()
             data?.let {
-                uploadBitmap = it.extras.get("data") as Bitmap
+                uploadBitmap = MediaStore.Images.Media.getBitmap(this.contentResolver, selectedImage) as Bitmap
                 imgAttach.setImageBitmap(uploadBitmap)
                 imgAttach.visibility = View.VISIBLE
             }
@@ -136,7 +143,7 @@ class CreatePostActivity : AppCompatActivity() {
 
                 newImagesRef.downloadUrl.addOnCompleteListener(object: OnCompleteListener<Uri> {
                     override fun onComplete(task: Task<Uri>) {
-                        //uploadPost(task.result.toString())
+                        uploadPost(task.result.toString())
                     }
                 })
             }
