@@ -23,6 +23,7 @@ class PostViewActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        title = "Post"
         setContentView(R.layout.activity_post_view)
 
         if (intent.hasExtra(KEY_POST_ID)) {

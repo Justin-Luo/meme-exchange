@@ -25,13 +25,15 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         val KEY_USER_ID = "KEY_USER_ID"
         val REQUEST_DETAILS = 1001
         val KEY_POST_ID = "KEY_POST_ID"
-        val userID = FirebaseAuth.getInstance().currentUser!!.uid
+        var userID = ""
     }
     private lateinit var postsAdapter: PostsAdapter
     private lateinit var postsListener: ListenerRegistration
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        userID = FirebaseAuth.getInstance().currentUser!!.uid
+
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
 

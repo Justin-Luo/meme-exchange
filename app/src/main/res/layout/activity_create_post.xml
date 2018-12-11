@@ -17,21 +17,11 @@
             android:hint="Title"
             android:maxLines="1" />
 
-    <EditText
-            android:id="@+id/etBody"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_below="@+id/field_title"
-            android:hint="Write your post..."
-            android:inputType="textMultiLine"
-            android:maxLines="10"
-            android:scrollHorizontally="false" />
-
     <ImageView
-            android:id="@+id/imgAttach"
-            android:layout_width="100dp"
-            android:layout_height="100dp"
-            android:visibility="gone"/>
+        android:id="@+id/imgAttach"
+        android:layout_width="341dp"
+        android:layout_height="200dp"
+        android:visibility="gone" />
 
     <Button
             android:id="@+id/btnSend"

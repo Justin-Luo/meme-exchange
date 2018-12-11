@@ -36,7 +36,7 @@ class CreatePostActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_create_post)
-
+        title = "Create a Post"
         btnSend.setOnClickListener {
             if (uploadBitmap != null) {
                 uploadPostWithImage()

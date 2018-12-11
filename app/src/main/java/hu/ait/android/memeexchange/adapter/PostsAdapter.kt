@@ -13,7 +13,9 @@ import android.view.animation.AnimationUtils
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
+import android.widget.Toast
 import com.bumptech.glide.Glide
+import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.FirebaseFirestore
 import hu.ait.android.memeexchange.MainActivity
 import hu.ait.android.memeexchange.MainActivity.Companion.KEY_POST_ID
@@ -23,6 +25,7 @@ import hu.ait.android.memeexchange.PortfolioActivity
 import hu.ait.android.memeexchange.PostViewActivity
 import hu.ait.android.memeexchange.R
 import hu.ait.android.memeexchange.data.Post
+import hu.ait.android.memeexchange.data.Vote
 import kotlinx.android.synthetic.main.row_post.view.*
 
 class PostsAdapter(var context: Context, var uid:String) : RecyclerView.Adapter<PostsAdapter.ViewHolder>() {
@@ -74,13 +77,11 @@ class PostsAdapter(var context: Context, var uid:String) : RecyclerView.Adapter<
             downVotePost(holder.adapterPosition)
         }
 
-        Log.d("test", context.toString())
         holder.itemView.setOnClickListener {
             if (context is MainActivity) {
                 (context as MainActivity).openPost(postKeys[holder.adapterPosition])
             } else {
                 (context as PortfolioActivity).openPost(postKeys[holder.adapterPosition])
-
             }
 
         }
@@ -101,18 +102,76 @@ class PostsAdapter(var context: Context, var uid:String) : RecyclerView.Adapter<
     }
 
     private fun upvotePost(index: Int) {
-        FirebaseFirestore.getInstance().collection("posts").document(
-                postKeys[index]
-        ).update("score", postsList[index].score + 1)
-        postsList[index].score += 1
-        notifyItemChanged(index)
+        val votesCollection: CollectionReference? = FirebaseFirestore.getInstance().collection("users").
+                document(uid).collection("voted_posts")
+        votesCollection!!.document(postKeys[index]).get()
+                .addOnSuccessListener { documentSnapshot ->
+                    if (documentSnapshot.exists()) {
+                        val voteTime: Double = documentSnapshot.get("time").toString().toDouble()
+                        if ((System.currentTimeMillis() - voteTime) < 10000) {
+                            Toast.makeText(context,
+                                    "You can only vote on each post once every 10 seconds",
+                                    Toast.LENGTH_LONG).show()
+                        }
+                        else {
+                            increasePostScore(index)
+                            votesCollection.document(postKeys[index]).update("time", System.currentTimeMillis())
+                        }
+                    }
+                    else {
+                        increasePostScore(index)
+                        handleNewVote(postKeys[index])
+                    }
+                }
     }
 
     private fun downVotePost(index: Int) {
+        val votesCollection: CollectionReference? = FirebaseFirestore.getInstance().collection("users").
+                document(uid).collection("voted_posts")
+        votesCollection!!.document(postKeys[index]).get()
+                .addOnSuccessListener { documentSnapshot ->
+                    if (documentSnapshot.exists()) {
+                        val voteTime: Double = documentSnapshot.get("time").toString().toDouble()
+                        if ((System.currentTimeMillis() - voteTime) < 10000) {
+                            Toast.makeText(context,
+                                    "You can only vote on each post once every 10 seconds",
+                                    Toast.LENGTH_LONG).show()
+                        }
+                        else {
+                            decreasePostScore(index)
+                            votesCollection.document(postKeys[index]).update("time", System.currentTimeMillis())
+                        }
+                    }
+                    else {
+                        decreasePostScore(index)
+                        handleNewVote(postKeys[index])
+                    }
+                }
+    }
+
+    fun handleNewVote(postId: String) {
+        val newVote = Vote(
+                postId,
+                System.currentTimeMillis()
+        )
+
+        FirebaseFirestore.getInstance().collection("users").
+                document(uid).collection("voted_posts").document(postId).set(newVote)
+    }
+
+    fun decreasePostScore(index: Int) {
         FirebaseFirestore.getInstance().collection("posts").document(
                 postKeys[index]
         ).update("score", postsList[index].score - 1)
         postsList[index].score -= 1
+        notifyItemChanged(index)
+    }
+
+    fun increasePostScore(index: Int) {
+        FirebaseFirestore.getInstance().collection("posts").document(
+                postKeys[index]
+        ).update("score", postsList[index].score + 1)
+        postsList[index].score += 1
         notifyItemChanged(index)
     }
 
