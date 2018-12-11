@@ -12,8 +12,10 @@ import hu.ait.android.memeexchange.MainActivity.Companion.KEY_USER_ID
 import hu.ait.android.memeexchange.MainActivity.Companion.userID
 import hu.ait.android.memeexchange.data.Post
 import hu.ait.android.memeexchange.data.Share
+import hu.ait.android.memeexchange.data.User
 import kotlinx.android.synthetic.main.activity_create_post.*
 import kotlinx.android.synthetic.main.activity_post_view.*
+import kotlinx.android.synthetic.main.owned_posts_info.*
 
 class PostViewActivity : AppCompatActivity() {
 
@@ -28,16 +30,39 @@ class PostViewActivity : AppCompatActivity() {
         }
 
         var post : Post?
+        var user : User?
+        var ownedPost : Share?
+
 
         if (postID != "") {
             val postRef= FirebaseFirestore.getInstance().collection("posts").
                     document(postID)
+            val userRef = FirebaseFirestore.getInstance().collection("users")
+                    .document(userID)
+            val ownedPostRef = FirebaseFirestore.getInstance().collection("users")
+                    .document(userID)
+                    .collection("owned_posts")
+                    .document(postID)
+
+
             postRef.get()
                     .addOnSuccessListener { documentSnapshot ->
                         post = documentSnapshot.toObject(Post::class.java)
+
                         tvTitle.text = post?.title
                         Glide.with(this@PostViewActivity).load(post?.imgUrl).into(ivPhoto)
                         tvScore.text = post?.score.toString()
+
+                        ownedPostRef.get().addOnSuccessListener {
+                            ownedPost = documentSnapshot.toObject(Share::class.java)
+                            tvStocks.text = "Shares Owned: " + ownedPost?.quantity.toString()
+                            tvAvgCost.text = "Average Cost: " + ownedPost?.avgCost.toString()
+                        }
+
+                        userRef.get().addOnSuccessListener {
+                            user = documentSnapshot.toObject(User::class.java)
+                            tvEquity.text = "Current Buying Power: " + user?.buyingPower.toString()
+                        }
 
                         btnUp.setOnClickListener {
 
