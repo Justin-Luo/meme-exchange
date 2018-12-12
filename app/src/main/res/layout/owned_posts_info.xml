@@ -12,13 +12,13 @@
         android:text="0.0" />
 
     <TextView
-        android:id="@+id/tvAvgCost"
+        android:id="@+id/tvEquity"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="0.0" />
 
     <TextView
-        android:id="@+id/tvEquity"
+        android:id="@+id/tvAvgCost"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="0.0" />
@@ -27,7 +27,7 @@
         android:id="@+id/tvDifference"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Difference" />
+        android:text="0.0" />
 
 
 </LinearLayout>

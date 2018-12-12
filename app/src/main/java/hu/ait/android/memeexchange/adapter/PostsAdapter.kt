@@ -60,15 +60,6 @@ class PostsAdapter(var context: Context, var uid:String) : RecyclerView.Adapter<
             holder.ivPhoto.visibility = View.GONE
         }
 
-//        if (post.uid == uid) {
-//            holder.btnDelete.visibility = View.VISIBLE
-//            holder.btnDelete.setOnClickListener {
-//                removePost(holder.adapterPosition)
-//            }
-//        } else {
-//            holder.btnDelete.visibility = View.GONE
-//        }
-
         holder.btnUp.setOnClickListener {
             upvotePost(holder.adapterPosition)
         }
@@ -174,17 +165,6 @@ class PostsAdapter(var context: Context, var uid:String) : RecyclerView.Adapter<
         postsList[index].score += 1
         notifyItemChanged(index)
     }
-
-
-//    private fun removePost(index: Int) {
-//        FirebaseFirestore.getInstance().collection("posts").document(
-//            postKeys[index]
-//        ).delete()
-//
-//        postsList.removeAt(index)
-//        postKeys.removeAt(index)
-//        notifyItemRemoved(index)
-//    }
 
     fun removePostByKey(key: String) {
         val index = postKeys.indexOf(key)

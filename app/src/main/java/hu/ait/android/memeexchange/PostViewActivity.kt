@@ -3,9 +3,11 @@ package hu.ait.android.memeexchange
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import android.widget.Toast
 import com.bumptech.glide.Glide
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import hu.ait.android.memeexchange.MainActivity.Companion.KEY_POST_ID
@@ -31,11 +33,6 @@ class PostViewActivity : AppCompatActivity() {
             postID = intent.getStringExtra(KEY_POST_ID)
         }
 
-        var post : Post?
-        var user : User?
-        var ownedPost : Share?
-
-
 
         if (postID != "") {
             val postRef= FirebaseFirestore.getInstance().collection("posts").
@@ -46,60 +43,82 @@ class PostViewActivity : AppCompatActivity() {
                     .collection("owned_posts")
                     .document(postID)
 
+            btnUp.setOnClickListener {
 
-            postRef.get()
-                    .addOnSuccessListener { documentSnapshot ->
-                        post = documentSnapshot.toObject(Post::class.java)
+            }
 
-                        tvTitle.text = post?.title
-                        Glide.with(this@PostViewActivity).load(post?.imgUrl).into(ivPhoto)
-                        tvScore.text = post?.score.toString()
+            btnDown.setOnClickListener {
 
-                        ownedPostRef.get().addOnSuccessListener {documentSnapshot ->
-                            ownedPost = documentSnapshot.toObject(Share::class.java)
-                            var tvStockBuffer = ownedPost?.quantity?: 0.0
-                            tvStocks.text = tvStockBuffer.toString()
-                            var avgCostBuffer = ownedPost?.avgCost?: 0.0
-                            tvAvgCost.text = "Average Cost: " + avgCostBuffer.toString()
-                            tvEquity.text = "Equity: " + (Math.abs(tvStocks.text.toString()
-                                    .toDouble().times(tvScore.text.toString().toDouble())))
-                                    .toString()
-                            tvStocks.text = "Shares Owned: " + tvStocks.text
+            }
 
-                        }
+            btnBuy.setOnClickListener {
+                val buyDialog = TransactionDialog()
+
+                val bundle = Bundle()
+                bundle.putSerializable(KEY_POST_ID, postID)
+                bundle.putSerializable("KEY_ITEM_TO_BUY", 0)
+                buyDialog.arguments = bundle
+                buyDialog.show(supportFragmentManager, "BUYDIALOG")
+            }
 
 
-                        btnUp.setOnClickListener {
 
-                        }
-
-                        btnDown.setOnClickListener {
-
-                        }
-
-                        btnBuy.setOnClickListener {
-                            val buyDialog = TransactionDialog()
-
-                            val bundle = Bundle()
-                            bundle.putSerializable(KEY_POST_ID, postID)
-                            bundle.putSerializable("KEY_ITEM_TO_BUY", 0)
-                            buyDialog.arguments = bundle
-                            buyDialog.show(supportFragmentManager, "BUYDIALOG")
-                        }
-
-                        btnSell.setOnClickListener{
-                            val sellDialog = TransactionDialog()
-
-                            val bundle = Bundle()
-                            bundle.putSerializable(KEY_POST_ID, postID)
-                            sellDialog.arguments = bundle
-                            sellDialog.show(supportFragmentManager, "SELLDIALOG")
-                        }
-                    }
-
-                    .addOnFailureListener { exception ->
-                        Log.d("Error","Get failed with ", exception)
-                    }
+            updatePostDetails(postRef, ownedPostRef)
         }
+
     }
+
+    fun updatePostDetails(postRef: DocumentReference, ownedPostRef: DocumentReference) {
+        postRef.get()
+                .addOnSuccessListener { documentSnapshot ->
+
+                    val post: Post? = documentSnapshot.toObject(Post::class.java)
+                    var ownedPost: Share?
+
+                    tvTitle.text = post?.title
+                    Glide.with(this@PostViewActivity).load(post?.imgUrl).into(ivPhoto)
+                    tvScore.text = post?.score.toString()
+
+                    ownedPostRef.get().addOnSuccessListener { documentSnapshot ->
+                        ownedPost = documentSnapshot.toObject(Share::class.java)
+                        var tvStockBuffer = ownedPost?.quantity ?: 0
+                        var avgCostBuffer = ownedPost?.avgCost ?: 0.0
+                        tvAvgCost.text = "Average Cost: " + avgCostBuffer.toString()
+                        var equity = (tvStockBuffer.toString()
+                                .toDouble() * post?.score.toString().toDouble())
+                                .toString()
+
+                        if (equity == "-0.0") {
+                            equity = "0.0"
+                        }
+
+                        tvEquity.text = "Equity: " + equity
+
+                        Log.d("test", tvStockBuffer.toString())
+
+                        tvStocks.text = "Shares Owned: " + tvStockBuffer.toString()
+                        tvDifference.text = "Net Gain/Loss: " + (equity.toDouble() - avgCostBuffer * tvStockBuffer.toString().toDouble())
+
+                        if (tvStockBuffer.toString() == "0") {
+                            btnSell.isEnabled = false
+                        } else {
+                            btnSell.setOnClickListener {
+                                val sellDialog = TransactionDialog()
+
+                                val bundle = Bundle()
+                                bundle.putSerializable(KEY_POST_ID, postID)
+                                sellDialog.arguments = bundle
+                                sellDialog.show(supportFragmentManager, "SELLDIALOG")
+                            }
+                        }
+
+                    }
+
+                }
+
+                .addOnFailureListener { exception ->
+                    Log.d("Error", "Get failed with ", exception)
+                }
+    }
+
 }

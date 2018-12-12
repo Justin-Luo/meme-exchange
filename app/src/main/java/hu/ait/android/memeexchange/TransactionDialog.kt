@@ -2,6 +2,7 @@ package hu.ait.android.memeexchange
 
 import android.app.Dialog
 import android.content.Context
+import android.content.DialogInterface
 import android.os.Bundle
 import android.support.v4.app.DialogFragment
 import android.support.v7.app.AlertDialog
@@ -33,7 +34,6 @@ class TransactionDialog : DialogFragment(), AdapterView.OnItemSelectedListener {
     private lateinit var tvBuyingPower: TextView
     private lateinit var etQuantity: EditText
     private lateinit var tvCurrQuantity: TextView
-
 
     private var currQuantity = 0
 
@@ -115,10 +115,14 @@ class TransactionDialog : DialogFragment(), AdapterView.OnItemSelectedListener {
                     // handle buy
                     handleBuy(postRef, userRef, ownedPostRef)
 
+
                 } else {
                     // handle sell
                     handleSell(postRef, userRef, ownedPostRef)
+
                 }
+
+
             } else {
                 etQuantity.error = "This field can not be empty"
             }
@@ -135,7 +139,7 @@ class TransactionDialog : DialogFragment(), AdapterView.OnItemSelectedListener {
             var soldEquity = 0.0
 
             postRef.get().addOnSuccessListener { documentSnapshot ->
-                soldEquity = documentSnapshot.get("score").toString().toDouble()
+                soldEquity = documentSnapshot.get("score").toString().toDouble() * quantity
                 userRef.update("buyingPower", buyingPower + soldEquity)
             }
 
@@ -150,14 +154,11 @@ class TransactionDialog : DialogFragment(), AdapterView.OnItemSelectedListener {
     }
 
     fun handleBuy(postRef: DocumentReference, userRef: DocumentReference, ownedPostRef: DocumentReference) {
-        var quantity = etQuantity.text.toString().toInt()
+        val quantity = etQuantity.text.toString().toInt()
 
-        var marketPrice = 0.0
-
-        var boughtEquity = 0.0
         postRef.get().addOnSuccessListener { documentSnapshot ->
-            marketPrice = documentSnapshot.get("score").toString().toDouble()
-            boughtEquity = quantity * marketPrice
+            val marketPrice = documentSnapshot.get("score").toString().toDouble()
+            val boughtEquity = quantity * marketPrice
 
             if (buyingPower < boughtEquity) {
                 etQuantity.error = "Not enough buying power"
@@ -167,18 +168,17 @@ class TransactionDialog : DialogFragment(), AdapterView.OnItemSelectedListener {
                             if (!documentSnapshot.exists()) {
                                 handleNewShare(marketPrice, quantity, userRef)
                             } else {
-                                handleAlreadyBoughtShare(ownedPostRef, quantity, marketPrice)
+                                handleAlreadyBoughtShare(ownedPostRef, postRef, quantity, marketPrice)
                             }
                             buyingPower -= marketPrice * quantity
                             userRef.update("buyingPower", buyingPower)
                             postRef.update("owners", FieldValue.arrayUnion(userID))
                         }
-                dialog.dismiss()
             }
         }
     }
 
-    fun handleAlreadyBoughtShare(ownedPostRef: DocumentReference, quantity: Int, marketPrice: Double) {
+    fun handleAlreadyBoughtShare(ownedPostRef: DocumentReference, postRef: DocumentReference, quantity: Int, marketPrice: Double) {
         var currQuantity = 0
         var avgCost = 0.0
         ownedPostRef.get().addOnSuccessListener { documentSnapshot ->
@@ -188,8 +188,8 @@ class TransactionDialog : DialogFragment(), AdapterView.OnItemSelectedListener {
             var totalQuantity = currQuantity + quantity
             avgCost = df.format((avgCost * currQuantity + marketPrice * quantity) / totalQuantity).toDouble()
             ownedPostRef.update("avgCost", avgCost)
+            dialog.dismiss()
         }
-
 
     }
 
@@ -201,6 +201,23 @@ class TransactionDialog : DialogFragment(), AdapterView.OnItemSelectedListener {
         )
 
         userRef.collection("owned_posts").document(postID).set(boughtShare)
+                .addOnSuccessListener {
+                    dialog.dismiss()
+                }
+
+    }
+
+    override fun onDismiss(dialog: DialogInterface?) {
+        var ownedPostRef = FirebaseFirestore.getInstance().collection("users")
+                .document(userID)
+                .collection("owned_posts")
+                .document(postID)
+
+        var postRef = FirebaseFirestore.getInstance().collection("posts")
+                .document(postID)
+
+        (context as PostViewActivity).updatePostDetails(postRef, ownedPostRef)
+        super.onDismiss(dialog)
     }
 
     override fun onNothingSelected(parent: AdapterView<*>?) {
