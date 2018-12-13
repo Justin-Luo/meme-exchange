@@ -7,6 +7,7 @@ import android.view.View
 import android.widget.Toast
 import com.bumptech.glide.Glide
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
@@ -16,6 +17,7 @@ import hu.ait.android.memeexchange.MainActivity.Companion.userID
 import hu.ait.android.memeexchange.data.Post
 import hu.ait.android.memeexchange.data.Share
 import hu.ait.android.memeexchange.data.User
+import hu.ait.android.memeexchange.data.Vote
 import kotlinx.android.synthetic.main.activity_create_post.*
 import kotlinx.android.synthetic.main.activity_post_view.*
 import kotlinx.android.synthetic.main.owned_posts_info.*
@@ -44,11 +46,11 @@ class PostViewActivity : AppCompatActivity() {
                     .document(postID)
 
             btnUp.setOnClickListener {
-
+                upVotePost()
             }
 
             btnDown.setOnClickListener {
-
+                downVotePost()
             }
 
             btnBuy.setOnClickListener {
@@ -120,5 +122,105 @@ class PostViewActivity : AppCompatActivity() {
                     Log.d("Error", "Get failed with ", exception)
                 }
     }
+
+    private fun upVotePost() {
+        val votesCollection: CollectionReference? = FirebaseFirestore.getInstance().collection("users").
+                document(FirebaseAuth.getInstance().currentUser!!.uid).collection("voted_posts")
+        votesCollection!!.document(postID).get()
+                .addOnSuccessListener { documentSnapshot ->
+                    if (documentSnapshot.exists()) {
+                        val voteTime: Double = documentSnapshot.get("time").toString().toDouble()
+                        if ((System.currentTimeMillis() - voteTime) < 10000) {
+                            Toast.makeText(this@PostViewActivity,
+                                    "You can only vote on each post once every 10 seconds",
+                                    Toast.LENGTH_LONG).show()
+                        }
+                        else {
+                            increasePostScore()
+                            votesCollection.document(postID).update("time", System.currentTimeMillis())
+                        }
+                    }
+                    else {
+                        increasePostScore()
+                        handleNewVote(postID)
+                    }
+                }
+    }
+
+
+    fun handleNewVote(postId: String) {
+        val newVote = Vote(
+                postId,
+                System.currentTimeMillis()
+        )
+
+        FirebaseFirestore.getInstance().collection("users").
+                document(FirebaseAuth.getInstance().currentUser!!.uid).collection("voted_posts").document(postId).set(newVote)
+    }
+
+    private fun downVotePost() {
+        val votesCollection: CollectionReference? = FirebaseFirestore.getInstance().collection("users").
+                document(FirebaseAuth.getInstance().currentUser!!.uid).collection("voted_posts")
+        votesCollection!!.document(postID).get()
+                .addOnSuccessListener { documentSnapshot ->
+                    if (documentSnapshot.exists()) {
+                        val voteTime: Double = documentSnapshot.get("time").toString().toDouble()
+                        if ((System.currentTimeMillis() - voteTime) < 10000) {
+                            Toast.makeText(this@PostViewActivity,
+                                    "You can only vote on each post once every 10 seconds",
+                                    Toast.LENGTH_LONG).show()
+                        }
+                        else {
+                            decreasePostScore()
+                            votesCollection.document(postID).update("time", System.currentTimeMillis())
+                        }
+                    }
+                    else {
+                        decreasePostScore()
+                        handleNewVote(postID)
+                    }
+                }
+    }
+
+    fun increasePostScore() {
+        val postRef = FirebaseFirestore.getInstance()
+                .collection("posts").document(postID)
+
+        val ownedPostRef = FirebaseFirestore.getInstance().collection("users")
+                .document(userID)
+                .collection("owned_posts")
+                .document(postID)
+
+        postRef.get().
+                addOnSuccessListener { documentSnapshot ->
+                    val postDocScore = documentSnapshot.get("score").toString().toInt()
+                    postRef.update("score", postDocScore + 1)
+                    val post = documentSnapshot.toObject(Post::class.java)
+                    tvScore.text = (post?.score.toString().toInt() + 1).toString()
+                    updatePostDetails(postRef, ownedPostRef)
+                }
+    }
+
+    fun decreasePostScore() {
+        val postRef = FirebaseFirestore.getInstance()
+                .collection("posts").document(postID)
+
+
+        val ownedPostRef = FirebaseFirestore.getInstance().collection("users")
+                .document(userID)
+                .collection("owned_posts")
+                .document(postID)
+
+        postRef.get().
+                addOnSuccessListener { documentSnapshot ->
+                    val postDocScore = documentSnapshot.get("score").toString().toInt()
+                    postRef.update("score", postDocScore - 1)
+                    val post = documentSnapshot.toObject(Post::class.java)
+                    tvScore.text = (post?.score.toString().toInt() - 1).toString()
+                    updatePostDetails(postRef, ownedPostRef)
+                }
+    }
+
+
 
 }
