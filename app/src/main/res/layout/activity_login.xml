@@ -14,23 +14,26 @@
             android:paddingLeft="24dp"
             android:paddingRight="24dp">
 
-        <ImageView android:src="@mipmap/ic_launcher"
-                   android:layout_width="wrap_content"
-                   android:layout_height="72dp"
-                   android:layout_marginBottom="24dp"
-                   android:layout_gravity="center_horizontal" />
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="99dp"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginBottom="24dp"
+            android:src="@drawable/pepe" />
 
         <android.support.design.widget.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:layout_marginTop="0dp">
+
+            <EditText
+                android:id="@+id/etEmail"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:layout_marginBottom="8dp">
-            <EditText android:id="@+id/etEmail"
-                      android:layout_width="match_parent"
-                      android:layout_height="wrap_content"
-                      android:inputType="textEmailAddress"
-                      android:text="demo@demo.hu"
-                      android:hint="email" />
+                android:hint="@string/email"
+                android:inputType="textEmailAddress"
+                android:text="@string/demo" />
         </android.support.design.widget.TextInputLayout>
 
         <android.support.design.widget.TextInputLayout
@@ -43,8 +46,8 @@
                       android:layout_width="match_parent"
                       android:layout_height="wrap_content"
                       android:inputType="textPassword"
-                      android:text="123654"
-                      android:hint="Password"/>
+                      android:text="@string/default_pass"
+                      android:hint="@string/password"/>
         </android.support.design.widget.TextInputLayout>
 
         <Button
@@ -55,7 +58,7 @@
                 android:layout_marginBottom="12dp"
                 android:padding="12dp"
                 android:onClick="loginClick"
-                android:text="Login"/>
+                android:text="@string/login"/>
 
         <Button
                 android:id="@+id/btnRegister"
@@ -63,7 +66,7 @@
                 android:layout_height="wrap_content"
                 android:padding="12dp"
                 android:onClick="registerClick"
-                android:text="Register"/>
+                android:text="@string/register"/>
 
     </LinearLayout>
 </ScrollView>

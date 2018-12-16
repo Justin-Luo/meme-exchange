@@ -34,7 +34,7 @@ class LoginActivity : AppCompatActivity() {
             )
         }.addOnFailureListener{
             Toast.makeText(this@LoginActivity,
-                "Login error ${it.message}",Toast.LENGTH_LONG).show()
+                    getString(R.string.login_err) + it.message,Toast.LENGTH_LONG).show()
         }
 
     }
@@ -64,11 +64,11 @@ class LoginActivity : AppCompatActivity() {
                     .document(FirebaseAuth.getInstance().currentUser!!.uid).set(newUser)
 
             Toast.makeText(this@LoginActivity,
-                "Registration OK", Toast.LENGTH_LONG).show()
+                getString(R.string.good_reg), Toast.LENGTH_LONG).show()
 
         }.addOnFailureListener{
             Toast.makeText(this@LoginActivity,
-                "Register error ${it.message}",Toast.LENGTH_LONG).show()
+                    getString(R.string.reg_error) + it.message,Toast.LENGTH_LONG).show()
         }
 
 
@@ -79,11 +79,11 @@ class LoginActivity : AppCompatActivity() {
     private fun isFormValid(): Boolean {
         return when {
             etEmail.text.isEmpty() -> {
-                etEmail.error = "This field can not be empty"
+                etEmail.error = getString(R.string.empty_field)
                 false
             }
             etPassword.text.isEmpty() -> {
-                etPassword.error = "This field can not be empty"
+                etPassword.error = getString(R.string.empty_field)
                 false
             }
             else -> true

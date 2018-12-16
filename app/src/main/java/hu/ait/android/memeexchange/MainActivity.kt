@@ -22,15 +22,16 @@ import kotlinx.android.synthetic.main.app_bar_main.*
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
 
     companion object {
-        val KEY_USER_ID = "KEY_USER_ID"
         val REQUEST_DETAILS = 1001
         val KEY_POST_ID = "KEY_POST_ID"
+        val KEY_ITEM_TO_BUY = "KEY_ITEM_TO_BUY"
         var userID = ""
     }
     private lateinit var postsAdapter: PostsAdapter
     private lateinit var postsListener: ListenerRegistration
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        title = getString(R.string.meme_feed)
         super.onCreate(savedInstanceState)
         userID = FirebaseAuth.getInstance().currentUser!!.uid
 

@@ -10,16 +10,11 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.animation.AnimationUtils
-import android.widget.Button
-import android.widget.ImageView
-import android.widget.TextView
-import android.widget.Toast
+import android.widget.*
 import com.bumptech.glide.Glide
 import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.FirebaseFirestore
 import hu.ait.android.memeexchange.MainActivity
-import hu.ait.android.memeexchange.MainActivity.Companion.KEY_POST_ID
-import hu.ait.android.memeexchange.MainActivity.Companion.KEY_USER_ID
 import hu.ait.android.memeexchange.MainActivity.Companion.REQUEST_DETAILS
 import hu.ait.android.memeexchange.PortfolioActivity
 import hu.ait.android.memeexchange.PostViewActivity
@@ -60,6 +55,12 @@ class PostsAdapter(var context: Context, var uid:String) : RecyclerView.Adapter<
             holder.ivPhoto.visibility = View.GONE
         }
 
+        setListeners(holder)
+
+        setAnimation(holder.itemView, position)
+    }
+
+    fun setListeners(holder: ViewHolder) {
         holder.btnUp.setOnClickListener {
             upvotePost(holder.adapterPosition)
         }
@@ -76,8 +77,6 @@ class PostsAdapter(var context: Context, var uid:String) : RecyclerView.Adapter<
             }
 
         }
-
-        setAnimation(holder.itemView, position)
     }
 
     fun addPost(post: Post, key: String) {
@@ -101,7 +100,7 @@ class PostsAdapter(var context: Context, var uid:String) : RecyclerView.Adapter<
                         val voteTime: Double = documentSnapshot.get("time").toString().toDouble()
                         if ((System.currentTimeMillis() - voteTime) < 10000) {
                             Toast.makeText(context,
-                                    "You can only vote on each post once every 10 seconds",
+                                    context.getString(R.string.voting_string),
                                     Toast.LENGTH_LONG).show()
                         }
                         else {
@@ -125,7 +124,7 @@ class PostsAdapter(var context: Context, var uid:String) : RecyclerView.Adapter<
                         val voteTime: Double = documentSnapshot.get("time").toString().toDouble()
                         if ((System.currentTimeMillis() - voteTime) < 10000) {
                             Toast.makeText(context,
-                                    "You can only vote on each post once every 10 seconds",
+                                    context.getString(R.string.voting_string),
                                     Toast.LENGTH_LONG).show()
                         }
                         else {
@@ -189,8 +188,8 @@ class PostsAdapter(var context: Context, var uid:String) : RecyclerView.Adapter<
 
         val tvTitle: TextView = itemView.tvTitle
         val tvScore: TextView = itemView.tvScore
-        val btnUp: Button = itemView.btnUp
-        val btnDown: Button = itemView.btnDown
+        val btnUp: ImageButton = itemView.btnUp
+        val btnDown: ImageButton = itemView.btnDown
         val ivPhoto: ImageView = itemView.ivPhoto
     }
 

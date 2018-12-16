@@ -15,6 +15,7 @@ import android.widget.Toast
 import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
+import hu.ait.android.memeexchange.MainActivity.Companion.KEY_ITEM_TO_BUY
 import hu.ait.android.memeexchange.MainActivity.Companion.KEY_POST_ID
 import hu.ait.android.memeexchange.MainActivity.Companion.userID
 
@@ -62,20 +63,18 @@ class TransactionDialog : DialogFragment(), AdapterView.OnItemSelectedListener {
 
         val arguments = this.arguments
 
-        if (arguments != null && arguments.containsKey("KEY_ITEM_TO_BUY")) {
-            builder.setTitle("Buying a post")
-            builder.setPositiveButton("Buy post") { dialog, witch ->
-            }
-        } else {
-            builder.setTitle("Selling a post")
-            builder.setPositiveButton("Sell post") { dialog, witch ->
-            }
-        }
+        setDialog(arguments, builder)
 
         if (arguments?.get(KEY_POST_ID) != null) {
             postID = arguments.get(KEY_POST_ID).toString()
         }
 
+        setDialogDetails()
+
+        return builder.create()
+    }
+
+    fun setDialogDetails() {
         FirebaseFirestore.getInstance().collection("users")
                 .document(userID)
                 .collection("owned_posts")
@@ -88,8 +87,18 @@ class TransactionDialog : DialogFragment(), AdapterView.OnItemSelectedListener {
                         tvCurrQuantity.text = "0"
                     }
                 }
+    }
 
-        return builder.create()
+    fun setDialog(arguments: Bundle?, builder: AlertDialog.Builder) {
+        if (arguments != null && arguments.containsKey(KEY_ITEM_TO_BUY)) {
+            builder.setTitle(getString(R.string.buy_title))
+            builder.setPositiveButton(getString(R.string.buy_btn)) { dialog, witch ->
+            }
+        } else {
+            builder.setTitle(getString(R.string.sell_title))
+            builder.setPositiveButton(getString(R.string.sell_btn)) { dialog, witch ->
+            }
+        }
     }
 
 
@@ -111,7 +120,7 @@ class TransactionDialog : DialogFragment(), AdapterView.OnItemSelectedListener {
                         .document(postID)
 
 
-                if (arguments != null && arguments.containsKey("KEY_ITEM_TO_BUY")) {
+                if (arguments != null && arguments.containsKey(KEY_ITEM_TO_BUY)) {
                     // handle buy
                     handleBuy(postRef, userRef, ownedPostRef)
 
@@ -124,7 +133,7 @@ class TransactionDialog : DialogFragment(), AdapterView.OnItemSelectedListener {
 
 
             } else {
-                etQuantity.error = "This field can not be empty"
+                etQuantity.error = getString(R.string.empty_field)
             }
         }
     }
@@ -133,7 +142,7 @@ class TransactionDialog : DialogFragment(), AdapterView.OnItemSelectedListener {
         var quantity = etQuantity.text.toString().toInt()
 
         if (quantity > currQuantity) {
-            etQuantity.error = "Cannot sell more than you own"
+            etQuantity.error = getString(R.string.sell_fail)
         } else {
 
             var soldEquity = 0.0
@@ -145,7 +154,7 @@ class TransactionDialog : DialogFragment(), AdapterView.OnItemSelectedListener {
 
             if (quantity == currQuantity) {
                 ownedPostRef.delete()
-                postRef.collection("owners").document(userID).delete()
+                postRef.update("owners", FieldValue.arrayRemove(userID))
             } else {
                 ownedPostRef.update("quantity", currQuantity - quantity)
             }
@@ -161,7 +170,7 @@ class TransactionDialog : DialogFragment(), AdapterView.OnItemSelectedListener {
             val boughtEquity = quantity * marketPrice
 
             if (buyingPower < boughtEquity) {
-                etQuantity.error = "Not enough buying power"
+                etQuantity.error = getString(R.string.buy_fail)
             } else {
                 userRef.collection("owned_posts").document(postID).get()
                         .addOnSuccessListener { documentSnapshot ->

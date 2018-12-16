@@ -14,7 +14,7 @@
         android:paddingBottom="0dp"
         android:paddingTop="20dp"
         android:paddingLeft="20dp"
-        android:text="Equity: " />
+        android:text="@string/equity" />
 
     <TextView
         android:id="@+id/tvEquity"
@@ -24,7 +24,7 @@
         android:paddingLeft="20dp"
         android:paddingBottom="20dp"
         android:paddingTop="20dp"
-        android:text="0.0"
+        android:text="@string/_0_0"
         android:textSize="30sp" />
 
     <TextView
@@ -33,7 +33,7 @@
         android:layout_height="wrap_content"
         android:paddingBottom="20dp"
         android:paddingLeft="20dp"
-        android:text="Owned Posts" />
+        android:text="@string/owned_posts" />
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/recyclerPortfolioPosts"

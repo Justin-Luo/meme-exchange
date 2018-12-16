@@ -16,7 +16,7 @@
         android:layout_marginLeft="8dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
-        android:text="Score"
+        android:text="@string/score"
         app:layout_constraintBottom_toBottomOf="@+id/btnDown"
         app:layout_constraintStart_toEndOf="@+id/btnUp"
         app:layout_constraintTop_toTopOf="@+id/btnDown" />
@@ -28,7 +28,7 @@
         android:layout_marginLeft="8dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="16dp"
-        android:text="Title"
+        android:text="@string/title"
         android:textSize="18sp"
         android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"
@@ -51,7 +51,7 @@
         android:layout_marginLeft="8dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
-        android:text="UP"
+        android:background="@drawable/upvote_button"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/ivPhoto" />
 
@@ -62,7 +62,7 @@
         android:layout_marginLeft="8dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
-        android:text="DN"
+        android:background="@drawable/downvote_button"
         app:layout_constraintStart_toEndOf="@+id/tvScore"
         app:layout_constraintTop_toBottomOf="@+id/ivPhoto" />
 
@@ -83,7 +83,7 @@
         android:layout_marginLeft="8dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="12dp"
-        android:text="Buy"
+        android:text="@string/buy"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/btnUp" />
 
@@ -93,7 +93,7 @@
         android:layout_height="wrap_content"
         android:layout_marginLeft="8dp"
         android:layout_marginStart="8dp"
-        android:text="Sell"
+        android:text="@string/sell"
         app:layout_constraintStart_toEndOf="@+id/btnBuy"
         app:layout_constraintTop_toTopOf="@+id/btnBuy" />
 

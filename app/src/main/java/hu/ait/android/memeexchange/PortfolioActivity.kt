@@ -23,28 +23,14 @@ class PortfolioActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_portfolio)
-        title = "My Portfolio"
+        title = getString(R.string.portfolio_title)
 
         Thread {
 
             FirebaseFirestore.getInstance().collection("users").document(userID).collection("owned_posts")
                     .get()
                     .addOnSuccessListener { result->
-                        for (document in result) {
-                            val shareQuantity = document.get("quantity").toString().toDouble()
-                            var postRef = FirebaseFirestore.getInstance().collection("posts").document(document.id)
-                            postRef.get()
-                                    .addOnSuccessListener { postDocument ->
-                                        val shareEquity = postDocument.get("score").toString().toDouble() * shareQuantity
-                                        tvEquity.text = (tvEquity.text.toString().toDouble() + shareEquity).toString()
-                                    }
-                        }
-
-                        FirebaseFirestore.getInstance().collection("users").document(userID)
-                                .get()
-                                .addOnSuccessListener { documentSnapshot ->
-                                    tvEquity.text = (tvEquity.text.toString().toDouble() + documentSnapshot.get("buyingPower").toString().toDouble()).toString()
-                                }
+                        getPortfolio(result)
 
                     }
         }.start()
@@ -60,6 +46,24 @@ class PortfolioActivity : AppCompatActivity() {
 
 
         initPortfolioPosts()
+    }
+
+    fun getPortfolio(result: QuerySnapshot) {
+        for (document in result) {
+            val shareQuantity = document.get("quantity").toString().toDouble()
+            var postRef = FirebaseFirestore.getInstance().collection("posts").document(document.id)
+            postRef.get()
+                    .addOnSuccessListener { postDocument ->
+                        val shareEquity = postDocument.get("score").toString().toDouble() * shareQuantity
+                        tvEquity.text = (tvEquity.text.toString().toDouble() + shareEquity).toString()
+                    }
+        }
+
+        FirebaseFirestore.getInstance().collection("users").document(userID)
+                .get()
+                .addOnSuccessListener { documentSnapshot ->
+                    tvEquity.text = (tvEquity.text.toString().toDouble() + documentSnapshot.get("buyingPower").toString().toDouble()).toString()
+                }
     }
 
     fun initPortfolioPosts() {

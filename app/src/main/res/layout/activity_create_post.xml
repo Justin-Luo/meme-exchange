@@ -14,7 +14,7 @@
             android:id="@+id/etTitle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Title"
+            android:hint="@string/title"
             android:maxLines="1" />
 
     <ImageView
@@ -28,13 +28,13 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:onClick="sendClick"
-            android:text="Send"/>
+            android:text="@string/send"/>
 
     <Button
             android:id="@+id/btnAttach"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:onClick="attachClick"
-            android:text="Attach"/>
+            android:text="@string/attach"/>
 
 </LinearLayout>

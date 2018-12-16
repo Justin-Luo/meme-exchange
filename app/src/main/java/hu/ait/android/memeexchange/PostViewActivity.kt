@@ -1,5 +1,6 @@
 package hu.ait.android.memeexchange
 
+import android.annotation.SuppressLint
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
@@ -12,7 +13,6 @@ import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import hu.ait.android.memeexchange.MainActivity.Companion.KEY_POST_ID
-import hu.ait.android.memeexchange.MainActivity.Companion.KEY_USER_ID
 import hu.ait.android.memeexchange.MainActivity.Companion.userID
 import hu.ait.android.memeexchange.data.Post
 import hu.ait.android.memeexchange.data.Share
@@ -45,23 +45,7 @@ class PostViewActivity : AppCompatActivity() {
                     .collection("owned_posts")
                     .document(postID)
 
-            btnUp.setOnClickListener {
-                upVotePost()
-            }
-
-            btnDown.setOnClickListener {
-                downVotePost()
-            }
-
-            btnBuy.setOnClickListener {
-                val buyDialog = TransactionDialog()
-
-                val bundle = Bundle()
-                bundle.putSerializable(KEY_POST_ID, postID)
-                bundle.putSerializable("KEY_ITEM_TO_BUY", 0)
-                buyDialog.arguments = bundle
-                buyDialog.show(supportFragmentManager, "BUYDIALOG")
-            }
+            setButtons()
 
 
 
@@ -70,6 +54,27 @@ class PostViewActivity : AppCompatActivity() {
 
     }
 
+    fun setButtons() {
+        btnUp.setOnClickListener {
+            upVotePost()
+        }
+
+        btnDown.setOnClickListener {
+            downVotePost()
+        }
+
+        btnBuy.setOnClickListener {
+            val buyDialog = TransactionDialog()
+
+            val bundle = Bundle()
+            bundle.putSerializable(KEY_POST_ID, postID)
+            bundle.putSerializable("KEY_ITEM_TO_BUY", 0)
+            buyDialog.arguments = bundle
+            buyDialog.show(supportFragmentManager, "BUYDIALOG")
+        }
+    }
+
+    @SuppressLint("SetTextI18n")
     fun updatePostDetails(postRef: DocumentReference, ownedPostRef: DocumentReference) {
         postRef.get()
                 .addOnSuccessListener { documentSnapshot ->
@@ -83,44 +88,51 @@ class PostViewActivity : AppCompatActivity() {
 
                     ownedPostRef.get().addOnSuccessListener { documentSnapshot ->
                         ownedPost = documentSnapshot.toObject(Share::class.java)
-                        var tvStockBuffer = ownedPost?.quantity ?: 0
-                        var avgCostBuffer = ownedPost?.avgCost ?: 0.0
-                        tvAvgCost.text = "Average Cost: " + avgCostBuffer.toString()
-                        var equity = (tvStockBuffer.toString()
-                                .toDouble() * post?.score.toString().toDouble())
-                                .toString()
 
-                        if (equity == "-0.0") {
-                            equity = "0.0"
-                        }
 
-                        tvEquity.text = "Equity: " + equity
+                        var tvStockBuffer = setPostDetails(ownedPost, post)
 
-                        Log.d("test", tvStockBuffer.toString())
-
-                        tvStocks.text = "Shares Owned: " + tvStockBuffer.toString()
-                        tvDifference.text = "Net Gain/Loss: " + (equity.toDouble() - avgCostBuffer * tvStockBuffer.toString().toDouble())
-
-                        if (tvStockBuffer.toString() == "0") {
-                            btnSell.isEnabled = false
-                        } else {
-                            btnSell.setOnClickListener {
-                                val sellDialog = TransactionDialog()
-
-                                val bundle = Bundle()
-                                bundle.putSerializable(KEY_POST_ID, postID)
-                                sellDialog.arguments = bundle
-                                sellDialog.show(supportFragmentManager, "SELLDIALOG")
-                            }
-                        }
+                        setSellButton(tvStockBuffer)
 
                     }
 
                 }
+    }
 
-                .addOnFailureListener { exception ->
-                    Log.d("Error", "Get failed with ", exception)
-                }
+    fun setSellButton(tvStockBuffer: Int) {
+        if (tvStockBuffer.toString() == "0") {
+            btnSell.isEnabled = false
+        } else {
+            btnSell.isEnabled = true
+            btnSell.setOnClickListener {
+                val sellDialog = TransactionDialog()
+
+                val bundle = Bundle()
+                bundle.putSerializable(KEY_POST_ID, postID)
+                sellDialog.arguments = bundle
+                sellDialog.show(supportFragmentManager, "SELLDIALOG")
+            }
+        }
+    }
+
+    @SuppressLint("SetTextI18n")
+    fun setPostDetails(ownedPost: Share?, post: Post?): Int {
+        var tvStockBuffer = ownedPost?.quantity ?: 0
+        var avgCostBuffer = ownedPost?.avgCost ?: 0.0
+        tvAvgCost.text = getString(R.string.avg_cost) + avgCostBuffer.toString()
+        var equity = (tvStockBuffer.toString()
+                .toDouble() * post?.score.toString().toDouble())
+                .toString()
+
+        if (equity == "-0.0") {
+            equity = "0.0"
+        }
+
+        tvEquity.text = getString(R.string.equity) + equity
+
+        tvStocks.text = getString(R.string.shares_owned) + tvStockBuffer.toString()
+        tvDifference.text = getString(R.string.net_equity) + (equity.toDouble() - avgCostBuffer * tvStockBuffer.toString().toDouble())
+        return tvStockBuffer
     }
 
     private fun upVotePost() {
@@ -132,7 +144,7 @@ class PostViewActivity : AppCompatActivity() {
                         val voteTime: Double = documentSnapshot.get("time").toString().toDouble()
                         if ((System.currentTimeMillis() - voteTime) < 10000) {
                             Toast.makeText(this@PostViewActivity,
-                                    "You can only vote on each post once every 10 seconds",
+                                    getString(R.string.voting_string),
                                     Toast.LENGTH_LONG).show()
                         }
                         else {
@@ -167,7 +179,7 @@ class PostViewActivity : AppCompatActivity() {
                         val voteTime: Double = documentSnapshot.get("time").toString().toDouble()
                         if ((System.currentTimeMillis() - voteTime) < 10000) {
                             Toast.makeText(this@PostViewActivity,
-                                    "You can only vote on each post once every 10 seconds",
+                                    getString(R.string.voting_string),
                                     Toast.LENGTH_LONG).show()
                         }
                         else {
